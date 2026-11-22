@@ -6,8 +6,6 @@ infrastructure directly, and there's no separate runner subscription.
 
 ![GitHub workflow jobs pass through API Gateway, Lambda, and SQS to launch one-job EC2 runners. Parameter Store holds the App configuration, and EventBridge schedules cleanup.](assets/runner-architecture.png)
 
-Dashed lines show configuration and cleanup calls. [Editable draw.io source](assets/runner-architecture.drawio) · [AWS icons](https://aws.amazon.com/architecture/icons/) · [GitHub logo](https://brand.github.com/foundations/logo)
-
 The fleet has zero warm runners, uses On-Demand capacity, and starts with provisioning disabled.
 The launch template uses IMDSv2 and encrypted gp3. GitHub App secrets live in SSM SecureString.
 
