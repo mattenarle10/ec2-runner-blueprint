@@ -1,0 +1,18 @@
+name: AWS runner smoke
+
+on: workflow_dispatch
+
+permissions: {}
+
+jobs:
+  smoke:
+    if: github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch
+    runs-on: [self-hosted, linux, x64, aws-ci]
+    timeout-minutes: 5
+    steps:
+      - name: Verify runner architecture
+        shell: bash
+        run: test "$(uname -m)" = x86_64
+      - name: Verify Docker
+        shell: bash
+        run: docker info --format '{{.ServerVersion}}'

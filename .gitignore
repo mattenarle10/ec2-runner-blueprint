@@ -1,0 +1,15 @@
+.artifacts/
+.terraform/
+.terragrunt-cache/
+__pycache__/
+.env
+.env.*
+*.tfstate*
+*.tfplan
+*.tfvars
+*.tfvars.json
+*.pem
+*.key
+examples/terragrunt/config.local.sh
+provider.generated.tf
+backend.generated.tf

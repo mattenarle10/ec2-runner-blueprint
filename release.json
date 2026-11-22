@@ -1,0 +1,12 @@
+{
+  "repo": "github-aws-runners/terraform-aws-github-runner",
+  "tag": "v8.1.1",
+  "source_sha": "f975153d6749b2ea2ddebc8d8cf5911196a1973a",
+  "bundle": "github-aws-runners-terraform-aws-github-runner-attestation-66859316.sigstore",
+  "sha256": {
+    "runner-binaries-syncer.zip": "519877155fff3e66e0f482c396bbafa6ee3753e998c299360742e02714b0c01d",
+    "runners.zip": "4568fb3ea491b19764509c9dcd91fb71a3f8b4978b9d64badc8bdc4b8f451264",
+    "termination-watcher.zip": "027b271209f868eebf2db06ef7193cff6c00d5b29690897c4d1e42e9a50b14a8",
+    "webhook.zip": "e149f3c07745289e9b291db293645b2dca54a19e3521426b0ee8da197b6bbd82"
+  }
+}
