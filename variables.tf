@@ -59,11 +59,12 @@ variable "associate_public_ipv4_address" {
 }
 
 variable "ami_id" {
-  description = "Pinned x86_64 Linux runner AMI supported by the upstream bootstrap."
+  description = "Optional pinned x86_64 Linux runner AMI supported by the upstream bootstrap. Defaults to Amazon Linux 2023."
   type        = string
+  default     = null
 
   validation {
-    condition     = can(regex("^ami-[0-9a-f]{17}$", var.ami_id))
+    condition     = var.ami_id == null || can(regex("^ami-[0-9a-f]{17}$", var.ami_id))
     error_message = "Provide a pinned EC2 AMI ID."
   }
 }
@@ -71,9 +72,10 @@ variable "ami_id" {
 variable "ami_owner_id" {
   description = "AWS account ID of the publisher of the pinned AMI."
   type        = string
+  default     = null
 
   validation {
-    condition     = can(regex("^[0-9]{12}$", var.ami_owner_id))
+    condition     = var.ami_owner_id == null || can(regex("^[0-9]{12}$", var.ami_owner_id))
     error_message = "Provide the 12-digit AWS account ID that owns the image."
   }
 }

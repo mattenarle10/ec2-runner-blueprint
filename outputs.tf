@@ -7,3 +7,8 @@ output "runner_labels" {
   description = "Use the full label set in GitHub Actions runs-on."
   value       = ["self-hosted", "linux", "x64", var.fleet_name]
 }
+
+output "runner_ami_id" {
+  description = "AMI ID selected by the current configuration."
+  value       = data.aws_ami.runner.id
+}

@@ -5,10 +5,12 @@ terraform {
 }
 
 locals {
-  fleet   = get_env("RUNNER_FLEET", "aws-ci")
-  profile = get_env("AWS_PROFILE")
-  region  = get_env("AWS_REGION")
-  account = regex("^[0-9]{12}$", get_env("RUNNER_AWS_ACCOUNT_ID"))
+  fleet        = get_env("RUNNER_FLEET", "aws-ci")
+  profile      = get_env("AWS_PROFILE")
+  region       = get_env("AWS_REGION")
+  account      = regex("^[0-9]{12}$", get_env("RUNNER_AWS_ACCOUNT_ID"))
+  ami_id       = trimspace(get_env("RUNNER_AMI_ID", ""))
+  ami_owner_id = trimspace(get_env("RUNNER_AMI_OWNER_ID", ""))
 }
 
 generate "provider" {
@@ -41,8 +43,8 @@ inputs = {
   vpc_id                        = get_env("RUNNER_VPC_ID")
   subnet_ids                    = split(",", get_env("RUNNER_SUBNET_IDS"))
   associate_public_ipv4_address = get_env("RUNNER_PUBLIC_IPV4", "false") == "true"
-  ami_id                        = get_env("RUNNER_AMI_ID")
-  ami_owner_id                  = get_env("RUNNER_AMI_OWNER_ID", local.account)
+  ami_id                        = local.ami_id == "" ? null : local.ami_id
+  ami_owner_id                  = local.ami_id == "" && local.ami_owner_id == "" ? null : coalesce(local.ami_owner_id, local.account)
   artifacts_directory           = abspath("${get_terragrunt_dir()}/../../.artifacts")
   provisioning_enabled          = get_env("RUNNER_PROVISIONING_ENABLED", "false") == "true"
   app_parameters = {

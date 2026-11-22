@@ -13,12 +13,18 @@ data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
 data "aws_region" "current" {}
 
+data "aws_ssm_parameter" "amazon_linux" {
+  count           = var.ami_id == null ? 1 : 0
+  name            = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  with_decryption = false
+}
+
 data "aws_ami" "runner" {
-  owners = [var.ami_owner_id]
+  owners = local.ami_owners
 
   filter {
     name   = "image-id"
-    values = [var.ami_id]
+    values = [local.ami_id]
   }
   filter {
     name   = "architecture"
@@ -28,9 +34,19 @@ data "aws_ami" "runner" {
     name   = "state"
     values = ["available"]
   }
+
+  lifecycle {
+    precondition {
+      condition     = (var.ami_id == null) == (var.ami_owner_id == null)
+      error_message = "Set both ami_id and ami_owner_id to pin a custom AMI, or omit both for Amazon Linux 2023."
+    }
+  }
 }
 
 locals {
+  ami_id     = var.ami_id == null ? nonsensitive(data.aws_ssm_parameter.amazon_linux[0].value) : var.ami_id
+  ami_owners = var.ami_id == null ? ["amazon"] : compact([var.ami_owner_id])
+
   release = jsondecode(file("${path.module}/release.json"))
   artifacts = {
     for filename in keys(local.release.sha256) :
@@ -97,7 +113,7 @@ module "runners" {
   create_service_linked_role_spot = false
   associate_public_ipv4_address   = var.associate_public_ipv4_address
   ami = {
-    owners = [var.ami_owner_id]
+    owners = local.ami_owners
     filter = { image-id = [data.aws_ami.runner.id] }
   }
   block_device_mappings = [{

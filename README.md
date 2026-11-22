@@ -1,4 +1,4 @@
-# AWS Actions Runner Kit
+# EC2 Runner Blueprint
 
 GitHub template for one-job Linux GitHub Actions runners on EC2. It includes a
 reusable Terraform module, a Terragrunt example, and a manual runner smoke test.
@@ -23,9 +23,9 @@ The launch template uses IMDSv2 and encrypted gp3. GitHub App secrets live in SS
    Store its ID, base64-encoded private key and webhook secret as SecureString parameters
    under `/aws-ci/github-app/` using the names shown in the example. Use the same Region
    as the fleet. [Upstream GitHub App setup](https://github-aws-runners.github.io/terraform-aws-github-runner/getting-started/)
-3. Use an existing VPC with outbound
-   access to GitHub and AWS. Use a pinned, available x86_64 Linux AMI that supports the
-   upstream bootstrap. Set the AMI publisher's account ID if it differs from yours.
+3. Use an existing VPC with outbound access to GitHub and AWS. The example selects
+   Amazon Linux 2023 x86_64 at plan time. Set `RUNNER_AMI_ID` to pin a compatible AMI
+   and set `RUNNER_AMI_OWNER_ID` if it belongs to another account.
    The example stores local state next to `terragrunt.hcl`, outside its cache.
    Set up an encrypted remote backend for shared deployments.
 
@@ -63,8 +63,5 @@ verified with Terraform 1.16.4.
 
 ## Image updates
 
-This starter takes a pinned AMI. For an automated rollout, add Image Builder and a
-separate promotion workflow. Test the candidate on an isolated runner, record evidence
-in S3, then update an accepted AMI parameter in SSM. Verify the new image on the normal
-fleet and roll back to the previous version if the smoke test fails. Keep image
-promotion credentials off the runners.
+The default image can change on a new Terraform plan. Pin a custom AMI to control
+when the fleet image changes. This template applies image changes through Terraform.

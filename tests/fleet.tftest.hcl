@@ -16,6 +16,9 @@ mock_provider "aws" {
       root_device_name = "/dev/xvda"
     }
   }
+  mock_data "aws_ssm_parameter" {
+    defaults = { value = "ami-0123456789abcdef0" }
+  }
   mock_data "aws_iam_policy_document" {
     defaults = { json = "{\"Version\":\"2012-10-17\",\"Statement\":[]}" }
   }
@@ -28,8 +31,6 @@ variables {
   repository          = "example/private-repo"
   vpc_id              = "vpc-00000000000000000"
   subnet_ids          = ["subnet-00000000000000000"]
-  ami_id              = "ami-0123456789abcdef0"
-  ami_owner_id        = "123456789012"
   artifacts_directory = "./.artifacts"
   app_parameters = {
     id             = "/aws-ci/github-app/id"
@@ -57,16 +58,35 @@ run "safe_first_apply" {
     condition     = module.runners.ssm_parameters.key_base64.name == var.app_parameters.key_base64
     error_message = "The module must reference the external private-key parameter."
   }
+  assert {
+    condition     = tolist(data.aws_ami.runner.owners) == tolist(["amazon"]) && local.ami_id == "ami-0123456789abcdef0"
+    error_message = "Use the public AL2023 parameter and require Amazon's owner alias by default."
+  }
 }
 
 run "explicit_provisioning" {
   command = plan
   variables {
     provisioning_enabled = true
+    ami_id               = "ami-00000000000000001"
+    ami_owner_id         = "123456789012"
   }
 
   assert {
     condition     = module.runners.runners.lambda_up.reserved_concurrent_executions == 1
     error_message = "Enabling provisioning must serialize scale-up."
   }
+  assert {
+    condition     = length(data.aws_ssm_parameter.amazon_linux) == 0 && local.ami_id == var.ami_id && tolist(local.ami_owners) == tolist([var.ami_owner_id])
+    error_message = "A pinned image must bypass the public parameter and keep its publisher restriction."
+  }
+}
+
+run "custom_image_requires_publisher" {
+  command = plan
+  variables {
+    ami_id = "ami-00000000000000001"
+  }
+
+  expect_failures = [data.aws_ami.runner]
 }
